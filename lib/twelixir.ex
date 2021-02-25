@@ -3,8 +3,13 @@ defmodule Twelixir do
   Twilio Conversation API Integration for Elixir.
   For more information please visit  [Twilio Conversations Documentation](https://www.twilio.com/docs/conversations/quickstart)
   """
+  require Logger
 
-  @base_twilio_url "https://conversations.twilio.com/v1/Conversations/"
+  @base_twilio_conv_url "https://conversations.twilio.com/v1/Conversations/"
+  @base_twilio_conv_url_instance "https://conversations.twilio.com/v1/Services/{instance}/Conversations/"
+  @base_twilio_user_url "https://conversations.twilio.com/v1/Users/"
+  @base_twilio_user_url_instance "https://conversations.twilio.com/v1/Services/{instance}/Users/"
+
   @doc """
   Creates a new conversation
 
@@ -37,7 +42,7 @@ defmodule Twelixir do
 
   """
   def create_conversation(friendly_name, attrs) do
-    api_url = "#{@base_twilio_url}"
+    api_url = "#{get_base_conversations_url()}"
 
     body = %{
       FriendlyName: friendly_name,
@@ -78,7 +83,7 @@ defmodule Twelixir do
 
   """
   def get_conversation(conversation_sid) do
-    api_url = "#{@base_twilio_url}#{conversation_sid}"
+    api_url = "#{get_base_conversations_url()}#{conversation_sid}"
 
     api_get_request(api_url)
   end
@@ -129,7 +134,7 @@ defmodule Twelixir do
 
   """
   def get_multiple_conversations(page \\ 1, page_size \\ 50) do
-    api_url = "#{@base_twilio_url}?Page=#{page}&PageSize=#{page_size}"
+    api_url = "#{get_base_conversations_url()}?Page=#{page}&PageSize=#{page_size}"
 
     api_get_request(api_url)
   end
@@ -175,11 +180,7 @@ defmodule Twelixir do
       }
 
   """
-  def get_all_conversations do
-    api_url = "#{@base_twilio_url}"
-
-    api_get_request(api_url)
-  end
+  def get_all_conversations, do: get_base_conversations_url() |> api_get_request()
 
   @doc """
   Updates a conversation
@@ -214,7 +215,7 @@ defmodule Twelixir do
 
   """
   def update_conversation(conversation_sid, new_attrs, state) do
-    api_url = "#{@base_twilio_url}#{conversation_sid}"
+    api_url = "#{get_base_conversations_url()}#{conversation_sid}"
 
     body = %{
       State: state,
@@ -237,7 +238,7 @@ defmodule Twelixir do
 
   """
   def delete_conversation(conversation_sid) do
-    api_url = "#{@base_twilio_url}#{conversation_sid}"
+    api_url = "#{get_base_conversations_url()}#{conversation_sid}"
     api_delete_request(api_url)
   end
 
@@ -281,7 +282,7 @@ defmodule Twelixir do
         twilio_proxy_mobile,
         attrs
       ) do
-    api_url = "#{@base_twilio_url}#{conversation_sid}/Participants"
+    api_url = "#{get_base_conversations_url()}#{conversation_sid}/Participants"
 
     participant_mobile = validate_mobile(phone_number, country_code)
 
@@ -322,7 +323,7 @@ defmodule Twelixir do
 
   """
   def create_participant_chat(conversation_sid, indentity, attrs) do
-    api_url = "#{@base_twilio_url}#{conversation_sid}/Participants"
+    api_url = "#{get_base_conversations_url()}#{conversation_sid}/Participants"
 
     body = %{
       Attributes: attrs |> Jason.encode!(),
@@ -359,7 +360,7 @@ defmodule Twelixir do
 
   """
   def get_participant(conversation_sid, participant_sid) do
-    api_url = "#{@base_twilio_url}#{conversation_sid}/Participants/#{participant_sid}"
+    api_url = "#{get_base_conversations_url()}#{conversation_sid}/Participants/#{participant_sid}"
 
     api_get_request(api_url)
   end
@@ -407,7 +408,7 @@ defmodule Twelixir do
   """
   def get_multiple_participants(conversation_sid, page \\ 0, page_size \\ 50) do
     api_url =
-      "#{@base_twilio_url}#{conversation_sid}/Participants?Page=#{page}&PageSize=#{page_size}"
+      "#{get_base_conversations_url()}#{conversation_sid}/Participants?Page=#{page}&PageSize=#{page_size}"
 
     api_get_request(api_url)
   end
@@ -452,7 +453,7 @@ defmodule Twelixir do
 
   """
   def get_all_participants(conversation_sid) do
-    api_url = "#{@base_twilio_url}#{conversation_sid}/Participants"
+    api_url = "#{get_base_conversations_url()}#{conversation_sid}/Participants"
 
     api_get_request(api_url)
   end
@@ -485,7 +486,7 @@ defmodule Twelixir do
 
   """
   def update_participant(conversation_sid, participant_sid, attrs) do
-    api_url = "#{@base_twilio_url}#{conversation_sid}/Participants/#{participant_sid}"
+    api_url = "#{get_base_conversations_url()}#{conversation_sid}/Participants/#{participant_sid}"
 
     body = %{
       Attributes: attrs |> Jason.encode!()
@@ -503,12 +504,12 @@ defmodule Twelixir do
 
   ## Examples
     
-      iex> Twelixir.deletej_participant("CHXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "MXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+      iex> Twelixir.delete_participant("CHXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "MXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
       :ok
 
   """
   def delete_participant(conversation_sid, participant_sid) do
-    api_url = "#{@base_twilio_url}#{conversation_sid}/Participants/#{participant_sid}"
+    api_url = "#{get_base_conversations_url()}#{conversation_sid}/Participants/#{participant_sid}"
     api_delete_request(api_url)
   end
 
@@ -545,7 +546,7 @@ defmodule Twelixir do
 
   """
   def create_message(conversation_sid, author, message_body, attrs) do
-    api_url = "#{@base_twilio_url}#{conversation_sid}/Messages"
+    api_url = "#{get_base_conversations_url()}#{conversation_sid}/Messages"
 
     body = %{
       Author: author,
@@ -587,7 +588,7 @@ defmodule Twelixir do
 
   """
   def get_message(conversation_sid, message_sid) do
-    api_url = "#{@base_twilio_url}#{conversation_sid}/Messages/#{message_sid}"
+    api_url = "#{get_base_conversations_url()}#{conversation_sid}/Messages/#{message_sid}"
 
     api_get_request(api_url)
   end
@@ -638,7 +639,8 @@ defmodule Twelixir do
 
   """
   def get_multiple_messages(conversation_sid, page \\ 0, page_size \\ 50) do
-    api_url = "#{@base_twilio_url}#{conversation_sid}/Messages?Page=#{page}&PageSize=#{page_size}"
+    api_url =
+      "#{get_base_conversations_url()}#{conversation_sid}/Messages?Page=#{page}&PageSize=#{page_size}"
 
     api_get_request(api_url)
   end
@@ -687,7 +689,7 @@ defmodule Twelixir do
 
   """
   def get_all_messages(conversation_sid) do
-    api_url = "#{@base_twilio_url}#{conversation_sid}/Messages"
+    api_url = "#{get_base_conversations_url()}#{conversation_sid}/Messages"
 
     api_get_request(api_url)
   end
@@ -725,7 +727,7 @@ defmodule Twelixir do
 
   """
   def update_message(conversation_sid, message_sid, message_body, attrs) do
-    api_url = "#{@base_twilio_url}#{conversation_sid}/Messages/#{message_sid}"
+    api_url = "#{get_base_conversations_url()}#{conversation_sid}/Messages/#{message_sid}"
 
     body = %{
       Attributes: attrs |> Jason.encode!(),
@@ -733,6 +735,40 @@ defmodule Twelixir do
     }
 
     api_post_request(api_url, body)
+  end
+
+  @spec add_conversation_user(String.t(), map) ::
+          {:ok, String.t()} | {:error, :user_exists} | {:error, map}
+  def add_conversation_user(identity, attrs \\ %{}) do
+    api_url = "#{get_base_user_url()}"
+
+    body = %{
+      Attributes: attrs |> Jason.encode!(),
+      Identity: identity
+    }
+
+    api_post_request(api_url, body)
+    |> case do
+      %{"code" => 50201} ->
+        Logger.error("User already exists")
+        get_user(identity)
+
+      v ->
+        v
+    end
+    |> case do
+      %{"sid" => id} ->
+        {:ok, id}
+
+      %{"code" => code} ->
+        {:error, %{code: code}}
+    end
+  end
+
+  def get_user(identity) do
+    api_url = "#{get_base_user_url()}#{identity}"
+
+    api_get_request(api_url)
   end
 
   @doc """
@@ -749,7 +785,7 @@ defmodule Twelixir do
 
   """
   def delete_message(conversation_sid, message_sid) do
-    api_url = "#{@base_twilio_url}#{conversation_sid}/Messages/#{message_sid}"
+    api_url = "#{get_base_conversations_url()}#{conversation_sid}/Messages/#{message_sid}"
     api_delete_request(api_url)
   end
 
@@ -801,6 +837,22 @@ defmodule Twelixir do
         204 -> IO.puts("Successfully deleted.")
         _ -> IO.puts("Failed to delete, status code: #{api_response.status_code}")
       end
+    end
+  end
+
+  def get_base_user_url() do
+    Application.get_env(:twelixir, :twilio_chat_service_sid)
+    |> case do
+      nil -> @base_twilio_user_url
+      instance -> @base_twilio_user_url_instance |> String.replace("{instance}", instance)
+    end
+  end
+
+  defp get_base_conversations_url() do
+    Application.get_env(:twelixir, :twilio_chat_service_sid)
+    |> case do
+      nil -> @base_twilio_conv_url
+      instance -> @base_twilio_conv_url_instance |> String.replace("{instance}", instance)
     end
   end
 
